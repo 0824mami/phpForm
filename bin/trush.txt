@@ -1,0 +1,46 @@
+$pdo = db_connect();
+unset($_SESSION['fans']);
+$sql = $pdo->prepare('select * from fans where email=? and password_hash=?');
+$sql->execute([$_REQUEST['email'], $_REQUEST['password']]);
+$fan = $sql->fetch();
+foreach ($sql as $row) {
+	$_SESSION['fans'] = [
+		'id' => $row['id'],
+		'email' => $row['email'],
+		'password_hash' => $row['password_hash'],
+	];
+}
+
+if ($fan && password_verify($password, $fan['password'])) {
+	$_SESSION['fan_id'] = $fan['id'];
+	header('Location: index.php'); // ログイン成功後のリダイレクト
+} else {
+	echo "ログイン失敗";
+}
+?>
+
+###
+login
+<?php require_once 'header.php'; ?>
+<?php require_once 'config.php'; ?>
+
+<?php
+$email = $_POST['email'];
+$password = $_POST['password'];
+
+// データベース接続
+$pdo = db_connect();
+
+// ユーザー検索
+$stmt = $pdo->prepare('SELECT * FROM members WHERE email = ?');
+$stmt->execute([$email]);
+var_dump($email);
+$member = $stmt->fetch();
+
+if ($member && password_verify($password, $member['password_hash'])) {
+	$_SESSION['member_id'] = $member['id'];
+	header('Location: index.php'); // ログイン成功後のリダイレクト
+} else {
+	echo "ログイン失敗";
+}
+?>
